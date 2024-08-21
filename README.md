@@ -2,7 +2,7 @@
 
 前端采用 Vue3 + TypeScript + Sass + SocketIO
 
-
+服务端地址 [Server](https://github.com/baobaoJK/Destiny2-RogueLike-Raid-X-Online-Server)
 
 
 
