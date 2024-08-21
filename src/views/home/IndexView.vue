@@ -1,0 +1,157 @@
+<script setup lang="ts">
+import { ref } from 'vue'
+import { ElMessage } from 'element-plus'
+import {
+  useUserStore
+} from '@/stores/index'
+
+// 角色列表
+const roleList = ref([
+  {
+    role: 'titan',
+    name: '泰坦',
+    sub: '人类 / 觉醒者 / Exo',
+    light: '2000',
+    roleImg: new URL('/images/role/titan.png', import.meta.url).href
+  },
+  {
+    role: 'hunter',
+    name: '猎人',
+    sub: '人类 / 觉醒者 / Exo',
+    light: '2000',
+    roleImg: new URL('/images/role/hunter.png', import.meta.url).href
+  },
+  {
+    role: 'warlock',
+    name: '术士',
+    sub: '人类 / 觉醒者 / Exo',
+    light: '2000',
+    roleImg: new URL('/images/role/warlock.png', import.meta.url).href
+  }
+])
+
+// 提示框设置
+const roleDialogVisible = ref(false)
+
+// 角色信息
+const userInfo = ref({
+  role: '',
+  playerName: '',
+})
+
+// 设置角色图片
+const roleImg = ref()
+const setRoleImg = (item: any) => {
+  roleImg.value = item.role
+}
+
+// 设置角色
+const setRole = (role: string) => {
+  userInfo.value.role = role
+  roleDialogVisible.value = true
+}
+
+// 设置角色信息
+const setRoleInfo = async () => {
+  let messageInfo = ''
+
+  // 判断角色信息
+  if (userInfo.value.playerName == '') {
+    messageInfo = '请输入游戏名称 / 游戏ID'
+  }
+
+  if (messageInfo != '') {
+    ElMessage({
+      message: messageInfo,
+      grouping: true,
+      type: 'error'
+    })
+  } else {
+    // 存储信息
+    const userStore = useUserStore()
+    userStore.setUserInfo(userInfo.value)
+
+    // 跳转游戏面板
+    // router.replace('/gamepanel')
+    window.location.href = '/gamepanel'
+  }
+}
+</script>
+<template>
+  <div id="home">
+    <div class="role-box">
+      <div class="role-img-box">
+        <el-image v-for="item in roleList" :key="item.role" class="role-img" :class="{ show: roleImg === item.role }"
+          :src="item.roleImg" fit="cover"></el-image>
+      </div>
+
+      <div class="emblems">
+        <div class="title">选择游玩角色</div>
+        <a v-for="item in roleList" :key="item.role" class="emblem" @click="setRole(item.role)"
+          @mousemove="setRoleImg(item)">
+          <div class="role" :class="item.role">
+            <div class="description">
+              <p class="name">{{ item.name }}</p>
+              <p class="sub">{{ item.sub }}</p>
+            </div>
+            <div class="light">{{ item.light }}</div>
+          </div>
+        </a>
+        <div class="list">
+          <div class="link">
+            <router-link :to="{ name: 'info', params: { page: 'destiny2' } }">游戏说明</router-link>
+            <router-link :to="{ name: 'info', params: { page: 'gameplay' } }">游戏玩法</router-link>
+            <router-link :to="{ name: 'info', params: { page: 'update' } }">更新日志</router-link>
+            <router-link :to="{ name: 'info', params: { page: 'copyright' } }">版权声明</router-link>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 角色信息模态框 -->
+    <el-dialog class="dialog role-dialog" v-model="roleDialogVisible" width="40rem" :close-on-click-modal="false"
+      align-center>
+      <h1 class="title role-title">设置游戏角色信息</h1>
+
+      <!-- <div class="box role-captain-box">
+        <p class="title role-captain-title">是否火力战队队长</p>
+        <el-radio-group v-model="userInfo.isCaptain">
+          <el-radio :label="true">是</el-radio>
+          <el-radio :label="false">否</el-radio>
+        </el-radio-group>
+      </div>
+
+      <div class="box role-id-box">
+        <p class="title role-id-title">选择游戏编号</p>
+
+        <el-radio-group v-model="userInfo.roleId">
+          <el-radio v-for="index in 6" :key="index" :label="index">{{ index }} 号 </el-radio>
+        </el-radio-group>
+      </div> -->
+
+      <div class="box role-name-box">
+        <p class="title role-name-title">输入你的游戏名称 / 游戏ID</p>
+        <el-input v-model="userInfo.playerName" placeholder="请输入你的游戏名称 / 游戏ID"></el-input>
+      </div>
+
+      <div class="role-confirm-box">
+        <button type="button" class="button role-confirm" @click="setRoleInfo()">确认</button>
+        <button type="button" class="button role-cancel" @click="roleDialogVisible = false">
+          取消
+        </button>
+      </div>
+    </el-dialog>
+
+    <!-- 页脚 -->
+    <div class="footer">
+      <p>
+        当前网页版本为 RogueLike Raid Version X | 请完整的阅读 《游戏说明》 与 《游戏玩法》
+        后再开始游戏，以免影响游戏体验
+      </p>
+    </div>
+  </div>
+</template>
+
+<style scoped lang="scss">
+@import '@/assets/styles/home';
+</style>

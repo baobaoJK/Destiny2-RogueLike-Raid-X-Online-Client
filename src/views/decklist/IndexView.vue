@@ -1,0 +1,511 @@
+<script lang="ts" setup>
+import { ref, computed, watch } from 'vue'
+import { ElMessage } from 'element-plus'
+import TipsView from '@/components/tips/IndexView.vue'
+import InfoBoard from '@/components/infoboard/IndexView.vue'
+import {
+  shuffle,
+  cardImg,
+  getSocket
+} from '@/utils'
+
+// 父组件信息
+const props = defineProps<{
+  roomConfig: any,
+  playerConfig: any,
+  infoBoard: any,
+  setWebLoading: (status: boolean) => void,
+}>()
+
+const roomConfig: any = computed(() => props.roomConfig)
+const playerConfig: any = computed(() => props.playerConfig)
+const infoBoard: any = computed(() => props.infoBoard)
+const setWebLoading = (status: boolean) => props.setWebLoading(status)
+
+
+// 判断数据是否已收到
+// 房间信息阶段
+// const roomConfigStage = computed(() => {
+//   return (props.roomConfig?.raidConfig === undefined || props.roomConfig?.raidConfig === null) ? true : false
+// })
+// 玩家信息
+const playerConfigStage = computed(() => {
+  return (props.playerConfig?.playerStatus === undefined || props.playerConfig?.playerStatus === null) ? true : false
+})
+
+// socket
+let socket: any
+
+// 提示框
+const tipsRef = ref()
+const tooltipShow = ref(false)
+const tooltipConfig: any = ref({
+  itemName: '',
+  itemKind: '',
+  itemRarity: '',
+  itemDescription: '',
+  itemCount: 0,
+  itemAllCount: 0,
+  itemIdea: ''
+})
+
+// 卡牌类型名称
+const cardTypeListName = [
+  '微弱增益',
+  '强大增益',
+  '欧皇增益',
+  '微弱不适',
+  '重度不适',
+  '反人类',
+  '特殊卡牌',
+  '辅助卡牌'
+]
+
+// 显示提示框
+const showTooltip = (card: any, index: number) => {
+  tooltipShow.value = true
+
+  tooltipConfig.value.itemName = card.cardCnName
+  tooltipConfig.value.itemKind = `${cardTypeListName[index]}`
+  tooltipConfig.value.itemRarity = '史诗'
+  tooltipConfig.value.itemDescription = card.cardDescription
+  tooltipConfig.value.itemCount = card.count
+  tooltipConfig.value.itemAllCount = card.allCount
+  tooltipConfig.value.itemIdea = card.idea
+
+  tipsRef.value.setToolTips(card)
+}
+
+//  关闭提示框
+const hideTooltip = () => {
+  tooltipShow.value = false
+}
+
+// 激活的 tabs 名称
+const activeName = ref(cardTypeListName[0])
+
+// 卡组类型表
+const deckType = [
+  'MicroGain',
+  'StrongGain',
+  'Opportunity',
+  'MicroDiscomfort',
+  'StrongDiscomfort',
+  'Unacceptable',
+  'Technology',
+  'Support'
+]
+
+// 获取玩家卡牌
+const getCardCount = () => {
+  if (playerConfigStage.value) {
+    return 0
+  }
+
+  let count = 0
+  for (let i = 0; i < deckType.length; i++) {
+    playerConfig.value.deckList[deckType[i]].forEach((item: any) => {
+      if (item != null) {
+        count += 1
+      }
+    })
+  }
+
+  return count === 0 ? true : false
+}
+
+// 卡组
+const allDeckList = ref()
+
+// 提示框
+const cardDialogVisible = ref(false)
+const shuffleDialogVisible = ref(false)
+const randomDialogVisible = ref(false)
+
+const allDeck: any = ref([])
+// const allDeckCount = ref()
+
+// 删除卡牌
+const deleteCardButton = (card: any) => {
+  setWebLoading(true)
+  socket.emit('deleteCard', {
+    roomId: roomConfig.value.roomId,
+    playerName: playerConfig.value.playerName,
+    card: card
+  })
+}
+
+// 添加卡牌
+const addCardButton = () => {
+  setWebLoading(true)
+  socket.emit('getCardList', {
+    roomId: roomConfig.value.roomId
+  })
+  cardDialogVisible.value = true
+}
+const addCard = (card: any) => {
+  setWebLoading(true)
+  socket.emit('saveCard', {
+    roomId: roomConfig.value.roomId,
+    playerName: playerConfig.value.playerName,
+    card: card
+  })
+}
+
+// 获取随机卡牌
+const randomCard = (length: number, cardType: number, byCount: boolean) => {
+  setWebLoading(true)
+  socket.emit('getRandomCard', {
+    roomId: roomConfig.value.roomId,
+    playerName: playerConfig.value.playerName,
+    length: length,
+    cardType: cardType,
+    byCount: byCount
+  })
+}
+
+
+// 打乱卡牌
+const shuffleCardButton = () => {
+  const mgList = playerConfig.value.deckList['MicroGain']
+  const sgList = playerConfig.value.deckList['StrongGain']
+  const oList = playerConfig.value.deckList['Opportunity']
+  const mdList = playerConfig.value.deckList['MicroDiscomfort']
+  const sdList = playerConfig.value.deckList['StrongDiscomfort']
+  const uList = playerConfig.value.deckList['Unacceptable']
+  const tList = playerConfig.value.deckList['Technology']
+  const sList = playerConfig.value.deckList['Support']
+
+  let tempList: any = []
+  allDeck.value = tempList.concat(mgList).concat(sgList).concat(oList).concat(mdList).concat(sdList).concat(uList).concat(tList).concat(sList)
+
+  if (allDeck.value.length == 0) {
+    ElMessage({
+      message: '你当前没有卡牌可以打乱',
+      grouping: true,
+      type: 'success'
+    })
+    return
+  }
+
+  allDeck.value = shuffle(allDeck.value)
+  shuffleDialogVisible.value = true
+}
+
+// 随机卡牌
+const randomCardButton = () => {
+  randomDialogVisible.value = true
+}
+
+// 初始化
+const initDeckList = () => {
+  socket = getSocket()
+
+  socket.off('getCardList')
+  socket.on('getCardList', (data: any) => {
+    console.log(data.cardList)
+    allDeckList.value = data.cardList
+
+    setWebLoading(false)
+  })
+
+  // 苦肉计
+  if (playerConfig.value.playerAttributes.torture) {
+    ElMessage({
+      message: `苦肉计已生效，你可以选择失去一张增益卡牌换取两次抽卡机会`,
+      duration: 0,
+      showClose: true,
+      grouping: true
+    })
+  }
+
+  // 卡牌回收计划
+  if (playerConfig.value.playerAttributes.program) {
+    ElMessage({
+      message: `卡牌回收计划已生效，你可以售卖你多余的增益卡牌，微弱增益 1 个货币，强大增益 3 个货币，欧皇增益 6 个货币`,
+      duration: 0,
+      showClose: true,
+      grouping: true
+    })
+  }
+}
+
+const isInitialized = ref(false);
+const isLoading = ref(true)
+watch(
+  () => [props.roomConfig, props.playerConfig],
+  () => {
+    if (props.roomConfig !== undefined && props.playerConfig !== undefined) {
+      isLoading.value = false
+      if (!isInitialized.value) {
+        initDeckList()
+        isInitialized.value = true
+      }
+    }
+  },
+  { immediate: true } // 立即执行，确保第一次赋值时触发
+);
+</script>
+
+<template>
+  <div id="decklist" v-loading.fullscreen.lock="isLoading" element-loading-background="rgba(0, 0, 0, 0.8)"
+    @mousemove="tipsRef?.moveTooltip($event)">
+    <!-- 提示框 -->
+    <TipsView ref="tipsRef" :tooltipShow="tooltipShow">
+      <template #header>
+        <div class="name">{{ tooltipConfig.itemName }}</div>
+        <div class="type">
+          <div class="kind">{{ tooltipConfig.itemKind }}</div>
+          <div class="rarity">{{ tooltipConfig.itemRarity }}</div>
+        </div>
+      </template>
+      <template #main>
+        <div class="description">
+          <div class="text">
+            <p class="type">{{ tooltipConfig.itemDescription }}</p>
+            <p v-if="tooltipConfig.itemIdea !== 'D2RRX'">想法来源：{{ tooltipConfig.itemIdea }}</p>
+          </div>
+        </div>
+        <div class="line"></div>
+        <div class="monetary">
+          <div class="name">
+            <img class="card" :src="cardImg" alt="cardImg.png" />
+            <p>卡池剩余</p>
+          </div>
+          <div class="info">
+            <p class="text">
+              <span class="count">{{ tooltipConfig.itemCount }}</span> /
+              <span class="all-count">{{ tooltipConfig.itemAllCount }}</span>
+            </p>
+          </div>
+        </div>
+      </template>
+    </TipsView>
+
+    <div class="decks">
+      <div class="deck-top">
+        <h1 class="deck-title">持有卡牌</h1>
+        <div class="deck-options">
+          <button class="button get-button" @click="addCardButton()">卡牌选取</button>
+          <button class="button shuffle-button" @click="shuffleCardButton()">打乱卡牌顺序</button>
+          <button class="button random-button" @click="randomCardButton()">抽取随机卡牌</button>
+        </div>
+        <hr class="deck-line" />
+      </div>
+
+      <div class="card-list" v-if="getCardCount()">
+        <h2 class="deck-title">你当前没有卡牌</h2>
+      </div>
+      <div class="card-list" v-for="(cardList, type, index) in playerConfig?.deckList" :key="index">
+        <div class="card-list-header" :style="{ display: cardList.length === 0 ? 'none' : 'block' }">
+          <h2 class="deck-title">{{ cardTypeListName[index] }} - 持有 {{ cardList.length }} 张</h2>
+          <hr class="deck-line" />
+        </div>
+
+        <div class="card-item" v-for="card in cardList" :key="card.id" :class="{
+          'card-item-1': card.cardType === 'MicroGain' || card.cardType === 'StrongGain',
+          'card-item-2': card.cardType === 'MicroDiscomfort' || card.cardType === 'StrongDiscomfort',
+          'card-item-3': card.cardType === 'Opportunity' || card.cardType === 'Unacceptable',
+          'card-item-4': card.cardType === 'Technology',
+          'card-item-5': card.cardType === 'Support'
+        }">
+          <div class="card" v-if="cardList.length != 0">
+            <div class="card-info">
+              <div>
+                <p class="card-name">- {{ card.cardCnName }} -</p>
+                <p class="card-sub">- {{ card.cardName }} -</p>
+              </div>
+              <div>
+                <p class="card-text">{{ card.cardDescription }}</p>
+                <hr v-if="card.idea !== 'D2RRX'" />
+                <p v-if="card.idea !== 'D2RRX'">想法来源：{{ card.idea }}</p>
+              </div>
+            </div>
+          </div>
+          <button class="button delete-button" @click="deleteCardButton(card)">删除</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 卡牌选取模态框 -->
+    <el-dialog class="dialog card-dialog" v-model="cardDialogVisible" :close-on-click-modal="false" width="75.25rem"
+      align-center>
+      <h1 class="title">卡牌选取</h1>
+      <div class="box card-list-box">
+        <el-tabs v-model="activeName" class="card-tabs">
+          <el-tab-pane v-for="(deckList, type, index) in allDeckList" :key="index"
+            :label="cardTypeListName[index] + '-(' + deckList.length + '张)'" :name="cardTypeListName[index]">
+            <el-scrollbar height="25rem" native
+              view-style="display: flex; flex-wrap: wrap; justify-content: center; width: 65rem; overfloy-x: hidden;">
+              <div class="item card-item" v-for="(card, index2) in deckList" :key="index2"
+                @mousemove="showTooltip(card, index)" @mouseout="hideTooltip()" :class="{
+                  'card-item-1': card.cardType === 'MicroGain' || card.cardType === 'StrongGain',
+                  'card-item-2':
+                    card.cardType === 'MicroDiscomfort' || card.cardType === 'StrongDiscomfort',
+                  'card-item-3': card.cardType === 'Opportunity' || card.cardType === 'Unacceptable',
+                  'card-item-4': card.cardType === 'Technology',
+                  'card-item-5': card.cardType === 'Support'
+                }">
+                <div class="card" @click="addCard(card)">
+                  <div class="info card-info">
+                    <div>
+                      <p class="card-name">{{ card.cardCnName }}</p>
+                      <p class="card-sub">{{ card.cardName }}</p>
+                    </div>
+                    <div>
+                      <p class="card-level">卡牌等级：T{{ card.cardLevel }}</p>
+                      <p class="card-description">卡池剩余：{{ card.count }} 张</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </el-scrollbar>
+          </el-tab-pane>
+        </el-tabs>
+      </div>
+
+      <button type="button" class="button card-cancel card-close" @click="cardDialogVisible = false">
+        取消
+      </button>
+    </el-dialog>
+
+    <!-- 打乱顺序 -->
+    <el-dialog class="dialog shuffle-dialog" v-model="shuffleDialogVisible" :close-on-click-modal="false"
+      width="75.25rem" align-center>
+      <h1 class="title">打乱顺序</h1>
+      <div class="box shuffle-list-box">
+        <div class="item shuffle-item" v-for="(card, index) in allDeck" :key="index" :class="{
+          'card-item-1': card.cardType === 'MicroGain' || card.cardType === 'StrongGain',
+          'card-item-2': card.cardType === 'MicroDiscomfort' || card.cardType === 'StrongDiscomfort',
+          'card-item-3': card.cardType === 'Opportunity' || card.cardType === 'Unacceptable',
+          'card-item-4': card.cardType === 'Technology',
+          'card-item-5': card.cardType === 'Support'
+        }">
+          <div class="card">
+            <div class="info shuffle-info">
+              <p class="card-id">{{ card.cardCnName }}</p>
+              <p class="card-name">{{ card.cardName }}</p>
+              <p class="card-name">- {{ index + 1 }} -</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <button type="button" class="button shuffle-cancel" @click="shuffleDialogVisible = false">
+        取消
+      </button>
+    </el-dialog>
+
+    <!-- 获取随机卡帕 -->
+    <el-dialog class="dialog random-dialog" v-model="randomDialogVisible" :close-on-click-modal="false" width="75.25rem"
+      align-center>
+      <h1 class="title">随机抽取卡牌</h1>
+      <div class="box random-list-box">
+        <div class="random-flex random-left">
+          <div class="item random-item card-item-4">
+            <div class="card" @click="randomCard(1, 7, false)">
+              <div class="info random-info">
+                <p>抽取一张</p>
+                <p class="card-id">{{ cardTypeListName[6] }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="random-flex random-center">
+          <div class="item random-item card-item-1">
+            <div class="card" @click="randomCard(1, 1, false)">
+              <div class="info random-info">
+                <p>抽取一张</p>
+                <p class="card-id">{{ cardTypeListName[0] }}</p>
+              </div>
+            </div>
+          </div>
+          <div class="item random-item card-item-3">
+            <div class="card" @click="randomCard(1, 3, false)">
+              <div class="info random-info">
+                <p>抽取一张</p>
+                <p class="card-id">{{ cardTypeListName[2] }}</p>
+              </div>
+            </div>
+          </div>
+          <div class="item random-item card-item-2">
+            <div class="card" @click="randomCard(1, 2, false)">
+              <div class="info random-info">
+                <p>抽取一张</p>
+                <p class="card-id">{{ cardTypeListName[1] }}</p>
+              </div>
+            </div>
+          </div>
+          <div class="item random-item card-item-1">
+            <div class="card" @click="randomCard(1, 4, false)">
+              <div class="info random-info">
+                <p>抽取一张</p>
+                <p class="card-id">{{ cardTypeListName[3] }}</p>
+              </div>
+            </div>
+          </div>
+          <div class="item random-item card-item-3">
+            <div class="card" @click="randomCard(1, 6, false)">
+              <div class="info random-info">
+                <p>抽取一张</p>
+                <p class="card-id">{{ cardTypeListName[5] }}</p>
+              </div>
+            </div>
+          </div>
+          <div class="item random-item card-item-2">
+            <div class="card" @click="randomCard(1, 5, false)">
+              <div class="info random-info">
+                <p>抽取一张</p>
+                <p class="card-id">{{ cardTypeListName[4] }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="random-flex random-right">
+          <div class="item random-item card-item-5">
+            <div class="card" @click="randomCard(1, 8, false)">
+              <div class="info random-info">
+                <p>抽取一张</p>
+                <p class="card-id">{{ cardTypeListName[7] }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <button type="button" class="button random-cancel" @click="randomDialogVisible = false">
+        取消
+      </button>
+    </el-dialog>
+
+    <!-- 持有卡牌帮助信息版 -->
+    <InfoBoard type="right" :show-info-board="infoBoard.gameDeckList">
+      <template #close-button>
+        <div class="close-button">
+          <a @click="infoBoard.gameDeckList = !infoBoard.gameDeckList">{{
+            infoBoard.gameDeckList ? '关闭' : '查看手牌说明'
+            }}</a>
+        </div>
+      </template>
+      <template #title>
+        <h1 class="title">持有卡牌说明</h1>
+      </template>
+      <template #content>
+        <div>
+          <p>如果 微弱不适 和 重度不适卡牌有冲突，则优先执行 重度不适卡牌 的描述</p>
+          <hr />
+          <p>在这里你可以进行以下操作</p>
+          <p>卡牌导出</p>
+          <p>卡牌导入</p>
+          <p>打乱卡牌顺序</p>
+          <p>选取卡牌</p>
+          <p>从某个卡牌类型中随机抽取一张</p>
+          <p>查看各个卡牌的描述信息</p>
+          <p>查看卡牌在卡池的数量</p>
+        </div>
+      </template>
+    </InfoBoard>
+  </div>
+</template>
+
+<style lang="scss" scoped>
+@import '@/assets/styles/decklist';
+</style>
