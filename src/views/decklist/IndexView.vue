@@ -3,25 +3,20 @@ import { ref, computed, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import TipsView from '@/components/tips/IndexView.vue'
 import InfoBoard from '@/components/infoboard/IndexView.vue'
-import {
-  shuffle,
-  cardImg,
-  getSocket
-} from '@/utils'
+import { shuffle, cardImg, getSocket } from '@/utils'
 
 // 父组件信息
 const props = defineProps<{
-  roomConfig: any,
-  playerConfig: any,
-  infoBoard: any,
-  setWebLoading: (status: boolean) => void,
+  roomConfig: any
+  playerConfig: any
+  infoBoard: any
+  setWebLoading: (status: boolean) => void
 }>()
 
 const roomConfig: any = computed(() => props.roomConfig)
 const playerConfig: any = computed(() => props.playerConfig)
 const infoBoard: any = computed(() => props.infoBoard)
 const setWebLoading = (status: boolean) => props.setWebLoading(status)
-
 
 // 判断数据是否已收到
 // 房间信息阶段
@@ -30,7 +25,9 @@ const setWebLoading = (status: boolean) => props.setWebLoading(status)
 // })
 // 玩家信息
 const playerConfigStage = computed(() => {
-  return (props.playerConfig?.playerStatus === undefined || props.playerConfig?.playerStatus === null) ? true : false
+  return props.playerConfig?.playerStatus === undefined || props.playerConfig?.playerStatus === null
+    ? true
+    : false
 })
 
 // socket
@@ -164,7 +161,6 @@ const randomCard = (length: number, cardType: number, byCount: boolean) => {
   })
 }
 
-
 // 打乱卡牌
 const shuffleCardButton = () => {
   const mgList = playerConfig.value.deckList['MicroGain']
@@ -177,7 +173,15 @@ const shuffleCardButton = () => {
   const sList = playerConfig.value.deckList['Support']
 
   let tempList: any = []
-  allDeck.value = tempList.concat(mgList).concat(sgList).concat(oList).concat(mdList).concat(sdList).concat(uList).concat(tList).concat(sList)
+  allDeck.value = tempList
+    .concat(mgList)
+    .concat(sgList)
+    .concat(oList)
+    .concat(mdList)
+    .concat(sdList)
+    .concat(uList)
+    .concat(tList)
+    .concat(sList)
 
   if (allDeck.value.length == 0) {
     ElMessage({
@@ -230,13 +234,11 @@ const initDeckList = () => {
   }
 }
 
-const isInitialized = ref(false);
-const isLoading = ref(true)
+const isInitialized = ref(false)
 watch(
   () => [props.roomConfig, props.playerConfig],
   () => {
     if (props.roomConfig !== undefined && props.playerConfig !== undefined) {
-      isLoading.value = false
       if (!isInitialized.value) {
         initDeckList()
         isInitialized.value = true
@@ -244,12 +246,11 @@ watch(
     }
   },
   { immediate: true } // 立即执行，确保第一次赋值时触发
-);
+)
 </script>
 
 <template>
-  <div id="decklist" v-loading.fullscreen.lock="isLoading" element-loading-background="rgba(0, 0, 0, 0.8)"
-    @mousemove="tipsRef?.moveTooltip($event)">
+  <div id="decklist" @mousemove="tipsRef?.moveTooltip($event)">
     <!-- 提示框 -->
     <TipsView ref="tipsRef" :tooltipShow="tooltipShow">
       <template #header>
@@ -304,7 +305,8 @@ watch(
 
         <div class="card-item" v-for="card in cardList" :key="card.id" :class="{
           'card-item-1': card.cardType === 'MicroGain' || card.cardType === 'StrongGain',
-          'card-item-2': card.cardType === 'MicroDiscomfort' || card.cardType === 'StrongDiscomfort',
+          'card-item-2':
+            card.cardType === 'MicroDiscomfort' || card.cardType === 'StrongDiscomfort',
           'card-item-3': card.cardType === 'Opportunity' || card.cardType === 'Unacceptable',
           'card-item-4': card.cardType === 'Technology',
           'card-item-5': card.cardType === 'Support'
@@ -342,7 +344,8 @@ watch(
                   'card-item-1': card.cardType === 'MicroGain' || card.cardType === 'StrongGain',
                   'card-item-2':
                     card.cardType === 'MicroDiscomfort' || card.cardType === 'StrongDiscomfort',
-                  'card-item-3': card.cardType === 'Opportunity' || card.cardType === 'Unacceptable',
+                  'card-item-3':
+                    card.cardType === 'Opportunity' || card.cardType === 'Unacceptable',
                   'card-item-4': card.cardType === 'Technology',
                   'card-item-5': card.cardType === 'Support'
                 }">
@@ -376,7 +379,8 @@ watch(
       <div class="box shuffle-list-box">
         <div class="item shuffle-item" v-for="(card, index) in allDeck" :key="index" :class="{
           'card-item-1': card.cardType === 'MicroGain' || card.cardType === 'StrongGain',
-          'card-item-2': card.cardType === 'MicroDiscomfort' || card.cardType === 'StrongDiscomfort',
+          'card-item-2':
+            card.cardType === 'MicroDiscomfort' || card.cardType === 'StrongDiscomfort',
           'card-item-3': card.cardType === 'Opportunity' || card.cardType === 'Unacceptable',
           'card-item-4': card.cardType === 'Technology',
           'card-item-5': card.cardType === 'Support'

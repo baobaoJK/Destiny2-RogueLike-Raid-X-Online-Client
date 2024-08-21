@@ -1,9 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { ElMessage } from 'element-plus'
-import {
-  useUserStore
-} from '@/stores/index'
+import { useUserStore } from '@/stores/index'
 
 // 角色列表
 const roleList = ref([
@@ -36,7 +34,7 @@ const roleDialogVisible = ref(false)
 // 角色信息
 const userInfo = ref({
   role: '',
-  playerName: '',
+  playerName: ''
 })
 
 // 设置角色图片
@@ -81,14 +79,25 @@ const setRoleInfo = async () => {
   <div id="home">
     <div class="role-box">
       <div class="role-img-box">
-        <el-image v-for="item in roleList" :key="item.role" class="role-img" :class="{ show: roleImg === item.role }"
-          :src="item.roleImg" fit="cover"></el-image>
+        <el-image
+          v-for="item in roleList"
+          :key="item.role"
+          class="role-img"
+          :class="{ show: roleImg === item.role }"
+          :src="item.roleImg"
+          fit="cover"
+        ></el-image>
       </div>
 
       <div class="emblems">
         <div class="title">选择游玩角色</div>
-        <a v-for="item in roleList" :key="item.role" class="emblem" @click="setRole(item.role)"
-          @mousemove="setRoleImg(item)">
+        <a
+          v-for="item in roleList"
+          :key="item.role"
+          class="emblem"
+          @click="setRole(item.role)"
+          @mousemove="setRoleImg(item)"
+        >
           <div class="role" :class="item.role">
             <div class="description">
               <p class="name">{{ item.name }}</p>
@@ -102,15 +111,22 @@ const setRoleInfo = async () => {
             <router-link :to="{ name: 'info', params: { page: 'destiny2' } }">游戏说明</router-link>
             <router-link :to="{ name: 'info', params: { page: 'gameplay' } }">游戏玩法</router-link>
             <router-link :to="{ name: 'info', params: { page: 'update' } }">更新日志</router-link>
-            <router-link :to="{ name: 'info', params: { page: 'copyright' } }">版权声明</router-link>
+            <router-link :to="{ name: 'info', params: { page: 'copyright' } }"
+              >版权声明</router-link
+            >
           </div>
         </div>
       </div>
     </div>
 
     <!-- 角色信息模态框 -->
-    <el-dialog class="dialog role-dialog" v-model="roleDialogVisible" width="40rem" :close-on-click-modal="false"
-      align-center>
+    <el-dialog
+      class="dialog role-dialog"
+      v-model="roleDialogVisible"
+      width="40rem"
+      :close-on-click-modal="false"
+      align-center
+    >
       <h1 class="title role-title">设置游戏角色信息</h1>
 
       <!-- <div class="box role-captain-box">
@@ -131,7 +147,10 @@ const setRoleInfo = async () => {
 
       <div class="box role-name-box">
         <p class="title role-name-title">输入你的游戏名称 / 游戏ID</p>
-        <el-input v-model="userInfo.playerName" placeholder="请输入你的游戏名称 / 游戏ID"></el-input>
+        <el-input
+          v-model="userInfo.playerName"
+          placeholder="请输入你的游戏名称 / 游戏ID"
+        ></el-input>
       </div>
 
       <div class="role-confirm-box">

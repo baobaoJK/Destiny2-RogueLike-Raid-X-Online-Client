@@ -5,10 +5,10 @@ import InfoBoard from '@/components/infoboard/IndexView.vue'
 
 // 父组件信息
 const props = defineProps<{
-  roomConfig: any,
-  playerConfig: any,
-  infoBoard: any,
-  setWebLoading: (status: boolean) => void,
+  roomConfig: any
+  playerConfig: any
+  infoBoard: any
+  setWebLoading: (status: boolean) => void
 }>()
 
 const roomConfig: any = computed(() => props.roomConfig)
@@ -66,7 +66,10 @@ const dropEvent = (index: number) => {
 const initPlayerEvent = () => {
   socket = getSocket()
 
-  eventFlipList.value = Array.from({ length: playerConfig.value.playerEventList.length }, () => false)
+  eventFlipList.value = Array.from(
+    { length: playerConfig.value.playerEventList.length },
+    () => false
+  )
 
   const changeCardState = setTimeout(() => {
     for (let i = 0; i < eventFlipList.value.length; i++) {
@@ -76,13 +79,11 @@ const initPlayerEvent = () => {
   }, 100)
 }
 
-const isInitialized = ref(false);
-const isLoading = ref(true)
+const isInitialized = ref(false)
 watch(
   () => [props.roomConfig, props.playerConfig],
   () => {
     if (props.roomConfig !== undefined && props.playerConfig !== undefined) {
-      isLoading.value = false
       if (!isInitialized.value) {
         initPlayerEvent()
         isInitialized.value = true
@@ -90,11 +91,10 @@ watch(
     }
   },
   { immediate: true } // 立即执行，确保第一次赋值时触发
-);
+)
 </script>
 <template>
-  <div id="playerevent" v-loading.fullscreen.lock="isLoading" element-loading-background="rgba(0, 0, 0, 0.8)">
-
+  <div id="playerevent">
     <h2 class="event-title" v-if="playerConfig?.playerEventList.length == 0">当前没有个人事件</h2>
     <h2 class="event-title" v-else>个人事件</h2>
 
@@ -119,15 +119,15 @@ watch(
                 <button class="button confirm" v-if="playerEvent.eventStatus === 'none'" @click="acceptEvent(index)">
                   接受
                 </button>
-                <button class="button finish" v-else @click="finishEvent(index)">
-                  完成
-                </button>
+                <button class="button finish" v-else @click="finishEvent(index)">完成</button>
               </div>
             </div>
           </div>
           <div class="event-card event-back"></div>
         </div>
-        <button class="button quit" v-if="playerEvent.eventStatus === 'none'" @click="dropEvent(index)">放弃</button>
+        <button class="button quit" v-if="playerEvent.eventStatus === 'none'" @click="dropEvent(index)">
+          放弃
+        </button>
         <p class="event-name">- 个人事件 -</p>
       </div>
     </div>
@@ -138,7 +138,7 @@ watch(
         <div class="close-button">
           <a @click="infoBoard.gamePlayerEvent = !infoBoard.gamePlayerEvent">{{
             infoBoard.gamePlayerEvent ? '关闭' : '查看事件说明'
-          }}</a>
+            }}</a>
         </div>
       </template>
       <template #title>

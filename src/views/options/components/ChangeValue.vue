@@ -1,15 +1,15 @@
 <script lang="ts" setup>
 import { ref, computed } from 'vue'
-import { getSocket } from '@/utils';
-import { storeToRefs } from 'pinia';
-import { useUserStore } from '@/stores';
+import { getSocket } from '@/utils'
+import { storeToRefs } from 'pinia'
+import { useUserStore } from '@/stores'
 
 const { roomId, playerName } = storeToRefs(useUserStore())
 
 // 父组件信息
 const props = defineProps<{
-  playerConfig: any,
-  setWebLoading: (status: boolean) => void,
+  playerConfig: any
+  setWebLoading: (status: boolean) => void
   title: string
 }>()
 
@@ -29,16 +29,16 @@ const handleChange = (value: number) => {
   if (dialogType.value === 'money') {
     setWebLoading(true)
     socket.emit('setMoney', {
-      "roomId": roomId.value,
-      "playerName": playerName.value,
-      "money": value
+      roomId: roomId.value,
+      playerName: playerName.value,
+      money: value
     })
   } else if (dialogType.value == 'draw') {
     setWebLoading(true)
     socket.emit('setDrawCount', {
-      "roomId": roomId.value,
-      "playerName": playerName.value,
-      "drawCount": value
+      roomId: roomId.value,
+      playerName: playerName.value,
+      drawCount: value
     })
   }
 }
@@ -67,10 +67,22 @@ defineExpose({
 </script>
 
 <template>
-  <el-dialog class="dialog value-dialog" v-model="visible" :close-on-click-modal="false" width="25rem" align-center>
+  <el-dialog
+    class="dialog value-dialog"
+    v-model="visible"
+    :close-on-click-modal="false"
+    width="25rem"
+    align-center
+  >
     <div class="value-input-box">
       <label for="value">{{ props.title }}：</label>
-      <el-input-number v-model="valueInput" :min="-100" :max="100" @change="handleChange" id="value" />
+      <el-input-number
+        v-model="valueInput"
+        :min="-100"
+        :max="100"
+        @change="handleChange"
+        id="value"
+      />
     </div>
     <div class="buttons">
       <button type="button" class="button value-cancel" @click="close">关闭</button>
@@ -81,12 +93,14 @@ defineExpose({
 <style lang="scss">
 // 货币/抽卡次数模态框样式
 .value-dialog {
-  clip-path: polygon(3rem 0%,
-      100% 0%,
-      100% calc(100% - 3rem),
-      calc(100% - 3rem) 100%,
-      0 100%,
-      0% 3rem) !important;
+  clip-path: polygon(
+    3rem 0%,
+    100% 0%,
+    100% calc(100% - 3rem),
+    calc(100% - 3rem) 100%,
+    0 100%,
+    0% 3rem
+  ) !important;
 
   .value-input-box {
     display: flex;

@@ -7,10 +7,10 @@ import InfoBoard from '@/components/infoboard/IndexView.vue'
 
 // 父组件信息
 const props = defineProps<{
-  roomConfig: any,
-  playerConfig: any,
-  infoBoard: any,
-  setWebLoading: (status: boolean) => void,
+  roomConfig: any
+  playerConfig: any
+  infoBoard: any
+  setWebLoading: (status: boolean) => void
 }>()
 
 const roomConfig: any = computed(() => props.roomConfig)
@@ -50,8 +50,7 @@ const showTooltip = (item: any, tipType: string) => {
     tooltipConfig.value.itemKind = '卡牌'
     tooltipConfig.value.itemRarity = '微弱不适'
     tooltipConfig.value.itemDescription = item.cardDescription
-  }
-  else {
+  } else {
     tooltipConfig.value.itemCnName = item.cnName
     tooltipConfig.value.itemKind = item.kind
     tooltipConfig.value.itemRarity = item.rarity
@@ -60,8 +59,12 @@ const showTooltip = (item: any, tipType: string) => {
     tooltipConfig.value.itemCount = item.count
     tooltipConfig.value.tipType = tipType
 
+    if (playerConfig.value.playerAttributes.promotions) {
+      tooltipConfig.value.sellMoney = tooltipConfig.value.sellMoney / 2
+    }
+
     if (playerConfig.value.playerAttributes.profiteer) {
-      tooltipConfig.value.sellMoney = item.sell + 1
+      tooltipConfig.value.sellMoney = tooltipConfig.value.sellMoney + 1
     }
   }
 
@@ -218,13 +221,11 @@ const initShop = () => {
 }
 
 // 初始化
-const isInitialized = ref(false);
-const isLoading = ref(true)
+const isInitialized = ref(false)
 watch(
   () => [props.roomConfig, props.playerConfig],
   () => {
     if (props.roomConfig !== undefined && props.playerConfig !== undefined) {
-      isLoading.value = false
       if (!isInitialized.value) {
         initShop()
         isInitialized.value = true
@@ -233,12 +234,11 @@ watch(
     }
   },
   { immediate: true } // 立即执行，确保第一次赋值时触发
-);
+)
 </script>
 
 <template>
-  <div id="shop" v-loading.fullscreen.lock="isLoading" element-loading-background="rgba(0, 0, 0, 0.8)"
-    @mousemove="tipsRef?.moveTooltip($event)">
+  <div id="shop" @mousemove="tipsRef?.moveTooltip($event)">
     <!-- 提示框 -->
     <TipsView ref="tipsRef" :tooltipShow="tooltipShow">
       <template #header>
@@ -253,7 +253,7 @@ watch(
           <div class="text">
             <p class="type">{{ tooltipConfig.itemDescription }}</p>
           </div>
-          <hr>
+          <hr />
           <div class="text">
             <p>库存: {{ tooltipConfig.itemCount }} 件</p>
           </div>
@@ -278,9 +278,13 @@ watch(
       <div class="shop-top">
         <h1 class="shop-title">随机商店</h1>
         <div class="shop-options">
-          <button class="button refresh-button" @click="refreshShop" v-if="playerConfig?.isCaptain">刷新商店</button>
+          <button class="button refresh-button" @click="refreshShop" v-if="playerConfig?.isCaptain">
+            刷新商店
+          </button>
           <p id="refresh-count">免费刷新次数：{{ roomConfig?.shopConfig.refreshCount }}</p>
-          <p id="pay-count">付费刷新费用(每人需支付)：{{ roomConfig?.shopConfig.refreshMoney / 6 }}</p>
+          <p id="pay-count">
+            付费刷新费用(每人需支付)：{{ roomConfig?.shopConfig.refreshMoney / 6 }}
+          </p>
         </div>
         <hr class="shop-line" />
       </div>
@@ -322,7 +326,6 @@ watch(
             </div>
           </div>
 
-
           <div class="exotic-list" v-if="roomConfig?.shopConfig.exoticList.length === 0">
             <h2 class="shop-title">异域装备栏</h2>
             <hr class="shop-line" />
@@ -357,7 +360,6 @@ watch(
           </div>
         </div>
       </div>
-
     </div>
 
     <!-- 圣水提示框 -->
@@ -368,7 +370,8 @@ watch(
         <div class="card-item" v-for="(card, index) in waterDeckList" :key="index"
           @mousemove="showTooltip(card, 'deleteCard')" @mouseout="hideTooltip()" @click="deleteCardItem(card, index)"
           :class="{
-            'card-item-2': card.cardType === 'MicroDiscomfort' || card.cardType === 'StrongDiscomfort',
+            'card-item-2':
+              card.cardType === 'MicroDiscomfort' || card.cardType === 'StrongDiscomfort',
             'card-item-3': card.cardType === 'Unacceptable',
             'card-item-4': card.cardType === 'Technology'
           }">

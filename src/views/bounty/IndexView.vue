@@ -5,10 +5,10 @@ import InfoBoard from '@/components/infoboard/IndexView.vue'
 
 // 父组件信息
 const props = defineProps<{
-  roomConfig: any,
-  playerConfig: any,
-  infoBoard: any,
-  setWebLoading: (status: boolean) => void,
+  roomConfig: any
+  playerConfig: any
+  infoBoard: any
+  setWebLoading: (status: boolean) => void
 }>()
 
 const roomConfig: any = computed(() => props.roomConfig)
@@ -56,13 +56,11 @@ const initBounty = () => {
   }, 100)
 }
 
-const isInitialized = ref(false);
-const isLoading = ref(true)
+const isInitialized = ref(false)
 watch(
   () => [props.roomConfig, props.playerConfig],
   () => {
     if (props.roomConfig !== undefined && props.playerConfig !== undefined) {
-      isLoading.value = false
       if (!isInitialized.value) {
         initBounty()
         isInitialized.value = true
@@ -70,11 +68,11 @@ watch(
     }
   },
   { immediate: true } // 立即执行，确保第一次赋值时触发
-);
+)
 </script>
 
 <template>
-  <div id="bounty" v-loading.fullscreen.lock="isLoading" element-loading-background="rgba(0, 0, 0, 0.8)">
+  <div id="bounty">
     <div class="bounty-title">
       <h1>赏金任务三选一执行，可获得 3-5 个单位货币 + 1 次抽卡机会</h1>
     </div>
@@ -84,19 +82,23 @@ watch(
           <div class="bounty-card bounty-front">
             <div class="bounty-info">
               <div>
-                <p class="title">{{
-                  bounty.bountyCnName !== "" ? bounty.bountyCnName : "当前没有赏金任务"
-                  }}</p>
+                <p class="title">
+                  {{ bounty.bountyCnName !== '' ? bounty.bountyCnName : '当前没有赏金任务' }}
+                </p>
                 <p class="sub-title">{{ bounty.bountyName }}</p>
               </div>
               <div>
-                <p class="text">{{
-                  bounty.bountyDescription !== "" ? bounty.bountyDescription : "请过段时间再来"
-                  }}</p>
+                <p class="text">
+                  {{
+                    bounty.bountyDescription !== '' ? bounty.bountyDescription : '请过段时间再来'
+                  }}
+                </p>
                 <hr v-if="bounty.idea !== 'D2RRX'" />
                 <p v-if="bounty.idea !== 'D2RRX'" class="idea">想法来源：{{ bounty.idea }}</p>
               </div>
-              <button class="button" @click="finishBounty" v-if="bounty.bountyId !== 'V0'">已完成</button>
+              <button class="button" @click="finishBounty" v-if="bounty.bountyId !== 'V0'">
+                已完成
+              </button>
             </div>
           </div>
           <div class="bounty-card bounty-back"></div>
@@ -112,7 +114,7 @@ watch(
         <div class="close-button">
           <a @click="infoBoard.gameBounty = !infoBoard.gameBounty">{{
             infoBoard.gameBounty ? '关闭' : '查看赏金说明'
-            }}</a>
+          }}</a>
         </div>
       </template>
       <template #title>

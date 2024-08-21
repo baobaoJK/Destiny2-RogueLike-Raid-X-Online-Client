@@ -1,18 +1,15 @@
 <script lang="ts" setup>
 import { computed, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
-import {
-  getSocket,
-  shuffle
-} from '@/utils'
+import { getSocket, shuffle } from '@/utils'
 import InfoBoard from '@/components/infoboard/IndexView.vue'
 
 // 父组件信息
 const props = defineProps<{
-  roomConfig: any,
-  playerConfig: any,
-  infoBoard: any,
-  setWebLoading: (status: boolean) => void,
+  roomConfig: any
+  playerConfig: any
+  infoBoard: any
+  setWebLoading: (status: boolean) => void
 }>()
 
 const roomConfig: any = computed(() => props.roomConfig)
@@ -27,7 +24,9 @@ const setWebLoading = (status: boolean) => props.setWebLoading(status)
 // })
 // 玩家信息
 const playerConfigStage = computed(() => {
-  return (props.playerConfig?.playerStatus === undefined || props.playerConfig?.playerStatus === null) ? true : false
+  return props.playerConfig?.playerStatus === undefined || props.playerConfig?.playerStatus === null
+    ? true
+    : false
 })
 
 // socket
@@ -295,13 +294,11 @@ const initDeck = () => {
   }
 }
 
-const isInitialized = ref(false);
-const isLoading = ref(true)
+const isInitialized = ref(false)
 watch(
   () => [props.roomConfig, props.playerConfig],
   () => {
     if (props.roomConfig !== undefined && props.playerConfig !== undefined) {
-      isLoading.value = false
       if (!isInitialized.value) {
         initDeck()
         isInitialized.value = true
@@ -309,11 +306,11 @@ watch(
     }
   },
   { immediate: true } // 立即执行，确保第一次赋值时触发
-);
+)
 </script>
 
 <template>
-  <div id="deck" v-loading.fullscreen.lock="isLoading" element-loading-background="rgba(0, 0, 0, 0.8)">
+  <div id="deck">
     <h1 class="deck-title">您有 {{ playerConfig?.drawCount }} 次抽取卡牌的机会</h1>
 
     <!-- 卡牌抽奖框 -->
@@ -342,15 +339,18 @@ watch(
 
     <!-- 卡牌数量数量显示 -->
     <p class="deck-count">
-      当前卡池数量：
-      微弱增益：{{ playerConfig?.playerAttributes.lastCount.MicroGain }} 张 |
-      强大增益：{{ playerConfig?.playerAttributes.lastCount.StrongGain }} 张 |
-      欧皇卡牌：{{ playerConfig?.playerAttributes.lastCount.Opportunity }} 张 |
-      微弱不适：{{ playerConfig?.playerAttributes.lastCount.MicroDiscomfort }} 张 |
-      重度不适：{{ playerConfig?.playerAttributes.lastCount.StrongDiscomfort }}张 |
-      反人类：{{ playerConfig?.playerAttributes.lastCount.Unacceptable }} 张 |
-      特殊卡牌：{{ playerConfig?.playerAttributes.lastCount.Technology }} 张 |
-      辅助卡牌：{{ playerConfig?.playerAttributes.lastCount.Support }} 张
+      当前卡池数量： 微弱增益：{{ playerConfig?.playerAttributes.lastCount.MicroGain }} 张 |
+      强大增益：{{ playerConfig?.playerAttributes.lastCount.StrongGain }} 张 | 欧皇卡牌：{{
+        playerConfig?.playerAttributes.lastCount.Opportunity
+      }}
+      张 | 微弱不适：{{ playerConfig?.playerAttributes.lastCount.MicroDiscomfort }} 张 |
+      重度不适：{{ playerConfig?.playerAttributes.lastCount.StrongDiscomfort }}张 | 反人类：{{
+        playerConfig?.playerAttributes.lastCount.Unacceptable
+      }}
+      张 | 特殊卡牌：{{ playerConfig?.playerAttributes.lastCount.Technology }} 张 | 辅助卡牌：{{
+        playerConfig?.playerAttributes.lastCount.Support
+      }}
+      张
     </p>
 
     <!-- 卡池信息显示按钮 -->
@@ -455,9 +455,11 @@ watch(
     </el-dialog>
 
     <!-- 卡池关闭 -->
-    <div class="deck-closed"
-      v-if="playerConfig?.playerAttributes.deckClosed || playerConfig?.playerAttributes.thirteen || playerConfig?.giveUp">
-    </div>
+    <div class="deck-closed" v-if="
+      playerConfig?.playerAttributes.deckClosed ||
+      playerConfig?.playerAttributes.thirteen ||
+      playerConfig?.giveUp
+    "></div>
 
     <!-- 卡池信息版 -->
     <InfoBoard type="right" :show-info-board="infoBoard.gameDeck">
@@ -465,7 +467,7 @@ watch(
         <div class="close-button">
           <a @click="infoBoard.gameDeck = !infoBoard.gameDeck">{{
             infoBoard.gameDeck ? '关闭' : '查看卡池说明'
-            }}</a>
+          }}</a>
         </div>
       </template>
       <template #title>

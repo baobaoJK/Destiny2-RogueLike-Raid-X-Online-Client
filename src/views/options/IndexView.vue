@@ -1,19 +1,16 @@
 <script lang="ts" setup>
 import { computed, ref, watch } from 'vue'
-import {
-  getRaidMapImg,
-  getSocket,
-} from '@/utils'
+import { getRaidMapImg, getSocket } from '@/utils'
 import { ElMessage } from 'element-plus'
 import ChangeValue from './components/ChangeValue.vue'
 import InfoBoard from '@/components/infoboard/IndexView.vue'
 
 // 父组件信息
 const props = defineProps<{
-  roomConfig: any,
-  playerConfig: any,
-  infoBoard: any,
-  setWebLoading: (status: boolean) => void,
+  roomConfig: any
+  playerConfig: any
+  infoBoard: any
+  setWebLoading: (status: boolean) => void
 }>()
 
 const roomConfig: any = computed(() => props.roomConfig)
@@ -23,11 +20,15 @@ const setWebLoading = (status: boolean) => props.setWebLoading(status)
 
 // 突袭信息阶段
 const raidConfigStage = computed(() => {
-  return (props.roomConfig?.raidConfig === undefined || props.roomConfig?.raidConfig === null) ? true : false
+  return props.roomConfig?.raidConfig === undefined || props.roomConfig?.raidConfig === null
+    ? true
+    : false
 })
 // 玩家信息
 const playerConfigStage = computed(() => {
-  return (props.playerConfig?.playerStatus === undefined || props.playerConfig?.playerStatus === null) ? true : false
+  return props.playerConfig?.playerStatus === undefined || props.playerConfig?.playerStatus === null
+    ? true
+    : false
 })
 
 // socket
@@ -76,7 +77,8 @@ const gameChallengeData = ref([
     mapName: '梦魇根源',
     level: '简单',
     name: '蔷薇绽放',
-    description: '在进入突袭后，每个人猜花的颜色，例如 [黑，白，黑]（一共有 8 种组合），把要猜的颜色打在公屏上，猜完后前往花坛看三朵花的颜色，如果谁猜对了，那么获得他身上号码所对应的数量货币'
+    description:
+      '在进入突袭后，每个人猜花的颜色，例如 [黑，白，黑]（一共有 8 种组合），把要猜的颜色打在公屏上，猜完后前往花坛看三朵花的颜色，如果谁猜对了，那么获得他身上号码所对应的数量货币'
   },
   {
     mapName: '克洛塔的末日',
@@ -96,10 +98,10 @@ const valueDialogTitle = ref('')
 
 // 按钮
 const mapDoorButtonDisabled = computed(() => {
-  return roomConfig.value.roomStage === "next" ? true : false
+  return roomConfig.value.roomStage === 'next' ? true : false
 })
 const mapNextButtonDisabled = computed(() => {
-  return roomConfig.value.roomStage === "door" ? true : false
+  return roomConfig.value.roomStage === 'door' ? true : false
 })
 const chestNextButtonDisabled = ref(false)
 const flawlessButtonDisabled = ref(false)
@@ -218,7 +220,6 @@ const mapDoor = () => {
 
 // 遭遇战完成按钮
 const mapNext = () => {
-
   // 判断突袭地图是否非空
   if (checkRaidMap()) return
 
@@ -269,7 +270,7 @@ const flawlessButton = () => {
 
   setWebLoading(true)
   socket.emit('flawless', {
-    "roomId": roomConfig.value.roomId
+    roomId: roomConfig.value.roomId
   })
 
   // 更改按钮状态
@@ -291,28 +292,28 @@ const initOptions = () => {
     setWebLoading(false)
   })
 }
-initOptions()
 
-const isLoading = ref(true)
 watch(
   () => [props.roomConfig, props.playerConfig],
   () => {
     if (props.roomConfig !== undefined && props.playerConfig !== undefined) {
-      isLoading.value = false
+      initOptions()
     }
   },
   { immediate: true } // 立即执行，确保第一次赋值时触发
-);
+)
 </script>
 <template>
-  <div id="options" v-loading.fullscreen.lock="isLoading" element-loading-background="rgba(0, 0, 0, 0.8)">
+  <div id="options">
     <div class="map-pane">
       <div class="map-info">
         <div class="map-img" @click="openMapDialog">
           <img :src="getRaidMapImg(mapName)" alt="地图" />
         </div>
         <p class="map-text">- {{ mapName }} -</p>
-        <button class="button map-button" @click="openMapDialog" v-if="playerConfig?.isCaptain">选择地图</button>
+        <button class="button map-button" @click="openMapDialog" v-if="playerConfig?.isCaptain">
+          选择地图
+        </button>
       </div>
 
       <div class="map-level-box">
@@ -368,12 +369,10 @@ watch(
       </div>
 
       <div class="map-list-box">
-
         <div class="map-item" v-for="(map, index) in mapList" :key="index" @click="setMapById(map.raidId)">
           <img :src="getRaidMapImg(map.raidName)" :alt="map.raidName" />
           <p>{{ map.raidName }}</p>
         </div>
-
       </div>
 
       <div class="map-confirm-box">

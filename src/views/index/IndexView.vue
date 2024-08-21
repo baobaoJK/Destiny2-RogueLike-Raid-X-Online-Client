@@ -11,14 +11,23 @@ const gameLogo = new URL('/images/Raid.png', import.meta.url).href // 使用 imp
     <a class="start-button" @click="gameDialogVisible = true">开始游戏</a>
 
     <!-- 游戏检测 -->
-    <el-dialog class="dialog game-dialog" v-model="gameDialogVisible" :close-on-click-modal="false" align-center>
+    <el-dialog
+      class="dialog game-dialog"
+      v-model="gameDialogVisible"
+      :close-on-click-modal="false"
+      align-center
+    >
       <img class="game-logo" :src="gameLogo" alt="Logo" />
       <h1 class="title game-title" style="color: #8ab2ff">游戏开始前请阅读以下信息</h1>
       <div class="box game-box">
         <p class="text game-config">请确认已完整的阅读游戏说明和游戏玩法后进行游戏</p>
         <div class="links">
-          <router-link class="link" :to="{ name: 'info', params: { page: 'destiny2' } }">→ 游戏说明 ←</router-link>
-          <router-link class="link" :to="{ name: 'info', params: { page: 'gameplay' } }">→ 游戏玩法 ←</router-link>
+          <router-link class="link" :to="{ name: 'info', params: { page: 'destiny2' } }"
+            >→ 游戏说明 ←</router-link
+          >
+          <router-link class="link" :to="{ name: 'info', params: { page: 'gameplay' } }"
+            >→ 游戏玩法 ←</router-link
+          >
         </div>
         <p class="text game-web">
           请使用

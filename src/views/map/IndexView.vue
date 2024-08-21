@@ -6,9 +6,9 @@ import InfoBoard from '@/components/infoboard/IndexView.vue'
 
 // 父组件信息
 const props = defineProps<{
-  roomConfig: any,
-  infoBoard: any,
-  setWebLoading: (status: boolean) => void,
+  roomConfig: any
+  infoBoard: any
+  setWebLoading: (status: boolean) => void
 }>()
 
 const roomConfig: any = computed(() => props.roomConfig)
@@ -35,7 +35,7 @@ let socket: any
 const rollMap = () => {
   setWebLoading(true)
   socket.emit('rollMap', {
-    "roomId": roomConfig.value.roomId
+    roomId: roomConfig.value.roomId
   })
   buttonDisabled.value = true
 }
@@ -46,9 +46,10 @@ const initMap = () => {
   socket.off('rollMap')
   socket.on('rollMap', (data: any) => {
     if (data.type === 'success') {
-      console.log(data)
+      // console.log(data)
       mapList.value = data.mapList
-
+      // const rollMapTime = ref(11000)
+      const rollMapTime = ref(3000)
       ElMessage({
         message: data.message,
         grouping: true
@@ -69,16 +70,14 @@ const initMap = () => {
           // 发送改变地图信息
           setWebLoading(true)
           socket.emit('changeMap', {
-            "roomId": roomConfig.value.roomId
+            roomId: roomConfig.value.roomId
           })
 
           clearTimeout(rollMapTimeout)
         }
-      }, 11000)
-      // }, 1)
+      }, rollMapTime.value)
       setWebLoading(false)
-    }
-    else {
+    } else {
       ElMessage({
         message: data.message,
         type: 'error',
@@ -87,13 +86,11 @@ const initMap = () => {
     }
   })
 }
-const isInitialized = ref(false);
-const isLoading = ref(true)
+const isInitialized = ref(false)
 watch(
   () => [props.roomConfig],
   () => {
     if (props.roomConfig !== undefined) {
-      isLoading.value = false
       if (!isInitialized.value) {
         initMap()
         isInitialized.value = true
@@ -101,11 +98,11 @@ watch(
     }
   },
   { immediate: true } // 立即执行，确保第一次赋值时触发
-);
+)
 </script>
 
 <template>
-  <div id="map" v-loading.fullscreen.lock="isLoading" element-loading-background="rgba(0, 0, 0, 0.8)">
+  <div id="map">
     <h1 class="map-title">抽取游玩地图</h1>
     <div class="map-roll-list">
       <div class="map-list" ref="mapListRef">
@@ -120,9 +117,7 @@ watch(
     <div class="map-text">
       <h1 ref="mapNameRef" :style="{ opacity: opacityValue, transition: 'opacity 1s' }"></h1>
     </div>
-    <button class="button" @click="rollMap()" :disabled="buttonDisabled">
-      抽取地图
-    </button>
+    <button class="button" @click="rollMap()" :disabled="buttonDisabled">抽取地图</button>
 
     <!-- 地图信息版 -->
     <InfoBoard type="right" :show-info-board="infoBoard.gameMap">
@@ -130,7 +125,7 @@ watch(
         <div class="close-button">
           <a @click="infoBoard.gameMap = !infoBoard.gameMap">{{
             infoBoard.gameMap ? '关闭' : '查看地图说明'
-            }}</a>
+          }}</a>
         </div>
       </template>
       <template #title>

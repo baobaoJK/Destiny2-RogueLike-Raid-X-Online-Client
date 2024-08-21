@@ -5,7 +5,6 @@ const props = defineProps({
   tooltipShow: Boolean
 })
 
-
 // 提示框坐标
 const tooltipLocation = ref<string>('translate(0px, 0px)')
 // 提示框样式
@@ -15,7 +14,7 @@ const header = ref('#C6C0B9')
 // 移动提示框
 const moveTooltip = (e: any) => {
   // values: e.clientX, e.clientY, e.pageX, e.pageY
-  const tooltipElement = document.querySelector('#tooltip') as HTMLElement;
+  const tooltipElement = document.querySelector('#tooltip') as HTMLElement
   if (!tooltipElement) return
 
   const tooltipWidth = tooltipElement.offsetWidth
@@ -37,7 +36,7 @@ const moveTooltip = (e: any) => {
 
   tooltipLocation.value = `translate(${x}px, ${y}px)`
 
-  console.log(tooltipElement)
+  // console.log(tooltipElement)
 }
 
 // 设置提示信息
